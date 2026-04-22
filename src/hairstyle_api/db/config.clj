@@ -1,12 +1,9 @@
 (ns hairstyle-api.db.config
-  (:require [datomic.client.api :as d]))
+  (:require [datomic.api :as d]))
 
-(def client
-  (d/client {:server-type :dev-local
-             :system "hairstyle-api"
-             :storage-dir :mem}))
+(def db-uri "datomic:mem://hairstyle-db")
 
-(d/create-database client {:db-name "hairstyle-db"})
+(d/create-database db-uri)
 
 (def conn
-  (d/connect client {:db-name "hairstyle-db"}))
+  (d/connect db-uri))

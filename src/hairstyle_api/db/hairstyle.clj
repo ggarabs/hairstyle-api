@@ -1,7 +1,8 @@
 (ns hairstyle-api.db.hairstyle
-  (:require [datomic.client.api :as d]
+  (:require [datomic.api :as d]
             [hairstyle-api.db.config :refer [conn]]
-            [hairstyle-api.protocols.datomic :refer [IDatomic]]))
+            [hairstyle-api.protocols.datomic :refer [IDatomic db]]
+            [schema.core :as s]))
 
 (def schema
   [{:db/ident :hairstyle/name
@@ -40,11 +41,21 @@
     :db/valueType :db.type/float
     :db/cardinality :db.cardinality/one}])
 
-(d/transact conn {:tx-data schema})
+@(d/transact conn schema)
+
+(s/defn find-all [datomic]
+  (d/q '[:find (pull ?e [*])
+         :in $
+         :where [?e :hairstyle/name]]
+       (db datomic)))
 
 (defrecord DatomicDB [conn]
   IDatomic
-  (find-all [_this]
-    (d/q {:query '[:find (pull ?e [*])
-                   :where [?e :hairstyle/name]]
-          :args [(d/db conn)]})))
+  (transact [_this datoms _options]
+    @(d/transact conn datoms))
+  (db [_this]
+    (d/db conn))
+  (filtered-db [_this pred]
+    (d/filter (d/db conn) pred))
+  (conn [_this]
+    conn))

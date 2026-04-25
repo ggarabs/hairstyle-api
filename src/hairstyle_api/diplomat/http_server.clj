@@ -37,6 +37,12 @@
         details-namespaced (wire.in.hairstyle/external->domain hairstyle-details)]
     (controllers.hairstyle/insert! details-namespaced req)))
 
+(defn delete-hairstyle [req]
+  (let [string-id (get-in req [:path-params :id])
+        converted-id (wire.in.hairstyle/id-string->long string-id)]
+    (controllers.hairstyle/delete! converted-id req)))
+
+
 (def default-routes
   #{["/api/version"
      :get (conj common-interceptors
@@ -55,7 +61,11 @@
     ["/api/hairstyle/:id"
      :get (conj common-interceptors
                 get-hairstyle-by-id)
-     :route-name :get-by-id]})
+     :route-name :get-by-id]
+    ["/api/hairstyle/:id"
+     :delete (conj common-interceptors
+                delete-hairstyle)
+     :route-name :delete-hairstyle]})
 
 (def routes
   (expand-routes

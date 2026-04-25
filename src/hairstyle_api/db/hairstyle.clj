@@ -59,6 +59,10 @@
   [hairstyle datomic]
   (db/transact datomic [hairstyle] {}))
 
+(s/defn retract!
+  [id datomic]
+  (db/transact datomic [[:db.fn/retractEntity id]] {}))
+
 (defrecord DatomicDB [conn]
   IDatomic
   (transact [_this datoms _options]

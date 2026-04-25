@@ -49,13 +49,15 @@
          :where [?e :hairstyle/name]]
        (db datomic)))
 
-(s/defn insert! 
+(s/defn find-by-id [id datomic]
+  (d/q '[:find (pull ?id [*]) .
+         :in $ ?id
+         :where [?id :hairstyle/name _]]
+       (db datomic) id))
+
+(s/defn insert!
   [hairstyle datomic]
-  (println hairstyle)
-  (try
-    (db/transact datomic [hairstyle] {})
-    (catch Exception err
-      (println err))))
+  (db/transact datomic [hairstyle] {}))
 
 (defrecord DatomicDB [conn]
   IDatomic

@@ -27,6 +27,11 @@
 (defn get-hairstyles [req]
   (controllers.hairstyle/get-all req))
 
+(defn get-hairstyle-by-id [req]
+  (let [string-id (get-in req [:path-params :id])
+        converted-id (wire.in.hairstyle/id-string->long string-id)]
+    (controllers.hairstyle/get-by-id converted-id req)))
+
 (defn insert-hairstyle [req]
   (let [hairstyle-details (:json-params req)
         details-namespaced (wire.in.hairstyle/external->domain hairstyle-details)]
@@ -46,7 +51,11 @@
     ["/api/hairstyle"
      :post (conj common-interceptors
                  insert-hairstyle)
-     :route-name :post-haistyle]})
+     :route-name :post-haistyle]
+    ["/api/hairstyle/:id"
+     :get (conj common-interceptors
+                get-hairstyle-by-id)
+     :route-name :get-by-id]})
 
 (def routes
   (expand-routes

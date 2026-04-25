@@ -5,6 +5,7 @@
    [io.pedestal.http.body-params :refer [body-params]]
    [io.pedestal.http.route :refer [expand-routes]]
    [hairstyle-api.controllers.hairstyle :as controllers.hairstyle]
+   [hairstyle-api.wire.in.hairstyle :as wire.in.hairstyle]
    [hairstyle-api.db.config :refer [conn]]
    [hairstyle-api.db.hairstyle :as db.hairstyle]))
 
@@ -26,6 +27,11 @@
 (defn get-hairstyles [req]
   (controllers.hairstyle/get-all req))
 
+(defn insert-hairstyle [req]
+  (let [hairstyle-details (:json-params req)
+        details-namespaced (wire.in.hairstyle/external->domain hairstyle-details)]
+    (controllers.hairstyle/insert! details-namespaced req)))
+
 (def default-routes
   #{["/api/version"
      :get (conj common-interceptors
@@ -36,7 +42,11 @@
   #{["/api/hairstyles"
      :get (conj common-interceptors
                 get-hairstyles)
-     :route-name :get-haistyles]})
+     :route-name :get-haistyles]
+    ["/api/hairstyle"
+     :post (conj common-interceptors
+                 insert-hairstyle)
+     :route-name :post-haistyle]})
 
 (def routes
   (expand-routes

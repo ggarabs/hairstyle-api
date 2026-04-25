@@ -1,7 +1,7 @@
 (ns hairstyle-api.db.hairstyle
   (:require [datomic.api :as d]
             [hairstyle-api.db.config :refer [conn]]
-            [hairstyle-api.protocols.datomic :refer [IDatomic db]]
+            [hairstyle-api.protocols.datomic :refer [IDatomic db] :as db]
             [schema.core :as s]))
 
 (def schema
@@ -9,7 +9,7 @@
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one}
 
-   {:db/ident :haistyle/slug
+   {:db/ident :hairstyle/slug
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one}
 
@@ -48,6 +48,14 @@
          :in $
          :where [?e :hairstyle/name]]
        (db datomic)))
+
+(s/defn insert! 
+  [hairstyle datomic]
+  (println hairstyle)
+  (try
+    (db/transact datomic [hairstyle] {})
+    (catch Exception err
+      (println err))))
 
 (defrecord DatomicDB [conn]
   IDatomic

@@ -42,6 +42,20 @@
         converted-id (wire.in.hairstyle/id-string->long string-id)]
     (controllers.hairstyle/delete! converted-id req)))
 
+(defn put-hairstyle [req]
+  (let [string-id (get-in req [:path-params :id]) 
+        converted-id (wire.in.hairstyle/id-string->long string-id)
+        hairstyle-details (:json-params req)
+        details-namespaced (wire.in.hairstyle/external->domain hairstyle-details)]
+    (controllers.hairstyle/update! converted-id details-namespaced req)))
+
+(defn patch-hairstyle [req]
+  (let [string-id (get-in req [:path-params :id]) 
+        converted-id (wire.in.hairstyle/id-string->long string-id)
+        hairstyle-details (:json-params req)
+        details-namespaced (wire.in.hairstyle/external->domain hairstyle-details)]
+    (controllers.hairstyle/patch! converted-id details-namespaced req)))
+
 
 (def default-routes
   #{["/api/version"
@@ -64,8 +78,16 @@
      :route-name :get-by-id]
     ["/api/hairstyle/:id"
      :delete (conj common-interceptors
-                delete-hairstyle)
-     :route-name :delete-hairstyle]})
+                   delete-hairstyle)
+     :route-name :delete-hairstyle]
+    ["/api/hairstyle/:id"
+     :put (conj common-interceptors
+                put-hairstyle)
+     :route-name :put-hairstyle]
+    ["/api/hairstyle/:id"
+     :patch (conj common-interceptors
+                  patch-hairstyle)
+     :route-name :patch-hairstyle]})
 
 (def routes
   (expand-routes

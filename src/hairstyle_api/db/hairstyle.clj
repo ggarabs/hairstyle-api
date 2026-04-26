@@ -43,11 +43,13 @@
 
 @(d/transact conn schema)
 
-(s/defn find-all [datomic]
-  (d/q '[:find (pull ?e [*])
-         :in $
-         :where [?e :hairstyle/name]]
-       (db datomic)))
+(defn find-all [datomic]
+  (let [conn (:conn datomic) 
+        db   (d/db conn)] 
+    (->> (d/q '[:find [?e ...]
+                :where [?e :hairstyle/name]] 
+              db)
+         (mapv #(d/pull db '[*] %)))))
 
 (s/defn find-by-id [id datomic]
   (d/q '[:find (pull ?id [*]) .
@@ -55,13 +57,27 @@
          :where [?id :hairstyle/name _]]
        (db datomic) id))
 
-(s/defn insert!
-  [hairstyle datomic]
-  (db/transact datomic [hairstyle] {}))
+(s/defn upsert!
+  ([hairstyle datomic]
+   (db/transact datomic [hairstyle] {}))
+  ([id hairstyle datomic]
+   (let [with-id (assoc hairstyle :db/id id)]
+     (db/transact datomic [with-id] {}))))
 
 (s/defn retract!
   [id datomic]
   (db/transact datomic [[:db.fn/retractEntity id]] {}))
+
+(s/defn update!
+  [id hairstyle datomic]
+    (let [current (find-by-id id datomic)
+          current-fields (dissoc current :db/id)
+          retractions (vec (for [[k v] current-fields
+                                 val (if (coll? v) v [v])]
+                             [:db/retract id k val]))
+          with-id (assoc hairstyle :db/id id)
+          tx-data (conj (vec retractions) with-id)]
+      (db/transact datomic tx-data {})))
 
 (defrecord DatomicDB [conn]
   IDatomic

@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.12.2"]
                  [io.pedestal/pedestal.service "0.6.0"]
                  [io.pedestal/pedestal.jetty "0.6.0"]
-                 [com.datomic/datomic-free "0.9.5697"]
+                 [com.datomic/peer "1.0.7556"]
                  [prismatic/schema "1.4.1"]]
   :main ^:skip-aot hairstyle-api.server
   :target-path "target/%s"

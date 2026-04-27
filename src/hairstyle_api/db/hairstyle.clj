@@ -76,7 +76,7 @@
                                  val (if (coll? v) v [v])]
                              [:db/retract id k val]))
           with-id (assoc hairstyle :db/id id)
-          tx-data (conj (vec retractions) with-id)]
+          tx-data (conj retractions with-id)]
       (db/transact datomic tx-data {})))
 
 (defrecord DatomicDB [conn]

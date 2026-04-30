@@ -1,7 +1,7 @@
 # 💇 Hairstyle API
 
 ## Overview
-Hairstyle API is a RESTful service built with **Clojure** designed to manage hairstyle resources. It provides endpoints for creating, retrieving, updating, and deleting hairstyle records, following clean architecture principles and modular design.
+Hairstyle API is a RESTful service built with **Clojure** designed to manage hairstyle resources. It provides endpoints for creating, retrieving, updating, and deleting hairstyle records, following diplomat architecture principles and modular design.
 
 ---
 
@@ -21,8 +21,8 @@ The project is structured to promote separation of concerns and maintainability:
 
 - **Language**: Clojure
 - **Build Tool**: Leiningen
-- **Web Server**: Ring / Jetty
-- **Database**: Configurable (e.g., Datomic or similar)
+- **Web Server**: Ring
+- **Database**: Configurable (Datomic)
 
 ---
 
@@ -47,7 +47,7 @@ src/
 
 ### Prerequisites
 
-- Java 8+
+- Java 8+ (JVM)
 - Leiningen
 
 ### Installation

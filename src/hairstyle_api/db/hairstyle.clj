@@ -1,5 +1,6 @@
 (ns hairstyle-api.db.hairstyle
-  (:require [datomic.api :as d]
+  (:require [clojure.set :as set]
+            [datomic.api :as d]
             [hairstyle-api.db.config :refer [conn]]
             [hairstyle-api.protocols.datomic :refer [IDatomic db] :as db]
             [schema.core :as s]))
@@ -72,8 +73,12 @@
   [id hairstyle datomic]
     (let [current (find-by-id id datomic)
           current-fields (dissoc current :db/id)
+          as-set (fn [v] (if (coll? v) (set v) #{v}))
           retractions (vec (for [[k v] current-fields
-                                 val (if (coll? v) v [v])]
+                                 :let [new-val (get hairstyle k)
+                                       to-retract (set/difference (as-set v)
+                                                                  (as-set new-val))]
+                                 val to-retract]
                              [:db/retract id k val]))
           with-id (assoc hairstyle :db/id id)
           tx-data (conj retractions with-id)]

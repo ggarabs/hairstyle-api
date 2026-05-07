@@ -42,6 +42,13 @@
    (validate-body wire.in/hairstyle)
    (inject-db (db.hairstyle/->DatomicDB conn))])
 
+(def patch-interceptors
+  [http/log-request
+   (body-params)
+   http/json-body
+   (validate-body wire.in/optional-hairstyle)
+   (inject-db (db.hairstyle/->DatomicDB conn))])
+
 (defn current-version [_]
   {:status 200
    :body {:version "1.0.0"}})
@@ -102,11 +109,11 @@
                    delete-hairstyle)
      :route-name :delete-hairstyle]
     ["/api/hairstyle/:id"
-     :put (conj common-interceptors
+     :put (conj body-interceptors
                 put-hairstyle)
      :route-name :put-hairstyle]
     ["/api/hairstyle/:id"
-     :patch (conj common-interceptors
+     :patch (conj patch-interceptors
                   patch-hairstyle)
      :route-name :patch-hairstyle]})
 

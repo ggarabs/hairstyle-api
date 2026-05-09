@@ -3,11 +3,9 @@
             [hairstyle-api.db.hairstyle :as db]
             [hairstyle-api.wire.out.hairstyle :refer [domain->external]]))
 
-(s/defn get-all 
+(s/defn get-all
   [{:keys [datomic]}]
-    (let [results (db/find-all datomic)]
-      {:status 200
-       :body (mapv domain->external results)}))
+    (db/find-all datomic))
 
 (s/defn get-by-id
   [id {:keys [datomic]}]

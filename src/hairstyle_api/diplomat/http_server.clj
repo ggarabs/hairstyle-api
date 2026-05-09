@@ -9,7 +9,8 @@
    [hairstyle-api.db.hairstyle :as db.hairstyle]
    [hairstyle-api.wire.in.hairstyle :as wire.in]
    [hairstyle-api.interceptors.http :as interceptors.http]
-   [hairstyle-api.interceptors.db :as interceptors.db]))
+   [hairstyle-api.interceptors.db :as interceptors.db]
+   [hairstyle-api.adapters.hairstyle :as adapters.hairstyle]))
 
 (def common-interceptors
   [http/log-request
@@ -36,7 +37,9 @@
    :body {:version "1.0.0"}})
 
 (defn ^:private get-hairstyles [req]
-  (controllers.hairstyle/get-all req))
+  {:status 200
+   :body (-> (controllers.hairstyle/get-all req)
+             adapters.hairstyle/internal-list->wire)})
 
 (defn ^:private get-hairstyle-by-id [req]
   (let [string-id (get-in req [:path-params :id])

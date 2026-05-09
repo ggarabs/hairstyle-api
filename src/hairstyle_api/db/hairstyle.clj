@@ -3,7 +3,9 @@
             [datomic.api :as d]
             [hairstyle-api.db.config :refer [conn]]
             [hairstyle-api.protocols.datomic :refer [IDatomic db] :as db]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [hairstyle-api.adapters.hairstyle :as adapters.hairstyle]
+            [hairstyle-api.models.hairstyle :as models.hairstyle]))
 
 (def schema
   [{:db/ident :hairstyle/name
@@ -38,19 +40,21 @@
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/many}
 
-   {:db/ident :hairstyle/rating
+   #_{:db/ident :hairstyle/rating
     :db/valueType :db.type/float
     :db/cardinality :db.cardinality/one}])
 
 @(d/transact conn schema)
 
-(defn find-all [datomic]
+(s/defn find-all :- models.hairstyle/List
+  [datomic]
   (let [conn (:conn datomic) 
         db   (d/db conn)] 
     (->> (d/q '[:find [?e ...]
                 :where [?e :hairstyle/name]] 
               db)
-         (mapv #(d/pull db '[*] %)))))
+         (mapv #(d/pull db '[*] %))
+         adapters.hairstyle/db->internal-list)))
 
 (s/defn find-by-id [id datomic]
   (d/q '[:find (pull ?id [*]) .

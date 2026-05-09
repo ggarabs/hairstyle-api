@@ -8,46 +8,28 @@
    [hairstyle-api.db.config :refer [conn]]
    [hairstyle-api.db.hairstyle :as db.hairstyle]
    [hairstyle-api.wire.in.hairstyle :as wire.in]
-   [io.pedestal.interceptor.chain :as chain]
-   [schema.core :as s]))
-
-(defn inject-db [datomic-db]
-  {:name  ::inject-db
-   :enter (fn [context]
-            (assoc-in context [:request :datomic] datomic-db))})
-
-(defn validate-body [schema]
-  {:name ::validate-body
-   :enter
-   (fn [context]
-     (let [body (or (get-in context [:request :json-params]) {})
-           errors (s/check schema body)]
-       (if errors
-         (-> context
-             (assoc :response {:status 400
-                               :body {:errors errors}}) 
-             chain/terminate) 
-         context)))})
+   [hairstyle-api.interceptors.http :as interceptors.http]
+   [hairstyle-api.interceptors.db :as interceptors.db]))
 
 (def common-interceptors
   [http/log-request
    (body-params)
    http/json-body
-   (inject-db (db.hairstyle/->DatomicDB conn))])
+   (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
 (def body-interceptors
   [http/log-request
    (body-params)
    http/json-body
-   (validate-body wire.in/hairstyle)
-   (inject-db (db.hairstyle/->DatomicDB conn))])
+   (interceptors.http/validate-body wire.in/hairstyle)
+   (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
 (def patch-interceptors
   [http/log-request
    (body-params)
    http/json-body
-   (validate-body wire.in/optional-hairstyle)
-   (inject-db (db.hairstyle/->DatomicDB conn))])
+   (interceptors.http/validate-body wire.in/optional-hairstyle)
+   (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
 (defn current-version [_]
   {:status 200

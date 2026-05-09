@@ -31,36 +31,36 @@
    (interceptors.http/validate-body wire.in/optional-hairstyle)
    (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
-(defn current-version [_]
+(defn ^:private current-version [_]
   {:status 200
    :body {:version "1.0.0"}})
 
-(defn get-hairstyles [req]
+(defn ^:private get-hairstyles [req]
   (controllers.hairstyle/get-all req))
 
-(defn get-hairstyle-by-id [req]
+(defn ^:private get-hairstyle-by-id [req]
   (let [string-id (get-in req [:path-params :id])
         converted-id (wire.in/id-string->long string-id)]
     (controllers.hairstyle/get-by-id converted-id req)))
 
-(defn insert-hairstyle [req]
+(defn ^:private insert-hairstyle [req]
   (let [hairstyle-details (:json-params req)
         details-namespaced (wire.in/external->domain hairstyle-details)]
     (controllers.hairstyle/insert! details-namespaced req)))
 
-(defn delete-hairstyle [req]
+(defn ^:private delete-hairstyle [req]
   (let [string-id (get-in req [:path-params :id])
         converted-id (wire.in/id-string->long string-id)]
     (controllers.hairstyle/delete! converted-id req)))
 
-(defn put-hairstyle [req]
+(defn ^:private put-hairstyle [req]
   (let [string-id (get-in req [:path-params :id]) 
         converted-id (wire.in/id-string->long string-id)
         hairstyle-details (:json-params req)
         details-namespaced (wire.in/external->domain hairstyle-details)]
     (controllers.hairstyle/update! converted-id details-namespaced req)))
 
-(defn patch-hairstyle [req]
+(defn ^:private patch-hairstyle [req]
   (let [string-id (get-in req [:path-params :id]) 
         converted-id (wire.in/id-string->long string-id)
         hairstyle-details (:json-params req)

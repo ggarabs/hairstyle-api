@@ -56,11 +56,16 @@
          (mapv #(d/pull db '[*] %))
          adapters.hairstyle/db->internal-list)))
 
-(s/defn find-by-id [id datomic]
-  (d/q '[:find (pull ?id [*]) .
-         :in $ ?id
-         :where [?id :hairstyle/name _]]
-       (db datomic) id))
+(s/defn find-by-id :- (s/maybe models.hairstyle/Hairstyle)
+  [id :- s/Str
+   datomic]
+  (some->> (d/q '[:find (pull ?e [*]) .
+                  :in $ ?e
+                  :where
+                  [?e :hairstyle/name _]]
+                (db datomic)
+                (Long/parseLong id))
+           adapters.hairstyle/db->internal))
 
 (s/defn upsert!
   ([hairstyle datomic]

@@ -8,13 +8,9 @@
     (db/find-all datomic))
 
 (s/defn get-by-id
-  [id {:keys [datomic]}]
-  (if-let [maybe-hairstyle (domain->external (db/find-by-id id datomic))]
-    {:status 200
-     :body maybe-hairstyle}
-    {:status 404
-     :body {:error "Not found"
-            :message (str "Hairstyle " id " does not exist")}}))
+  [id :- s/Str
+   {:keys [datomic]}]
+  (db/find-by-id id datomic))
 
 (s/defn insert!
   [details {:keys [datomic]}]

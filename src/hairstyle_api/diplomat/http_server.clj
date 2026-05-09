@@ -41,10 +41,16 @@
    :body (-> (controllers.hairstyle/get-all req)
              adapters.hairstyle/internal-list->wire)})
 
-(defn ^:private get-hairstyle-by-id [req]
-  (let [string-id (get-in req [:path-params :id])
-        converted-id (wire.in/id-string->long string-id)]
-    (controllers.hairstyle/get-by-id converted-id req)))
+(defn ^:private get-hairstyle-by-id
+  [{{:keys [id]} :path-params :as req}]
+  (if-let [result (some-> id
+                          (controllers.hairstyle/get-by-id req)
+                          adapters.hairstyle/internal->wire)]
+    {:status 200
+     :body result}
+    {:status 404
+     :body {:error "Not found"
+            :message (str "Hairstyle " id " does not exist")}}))
 
 (defn ^:private insert-hairstyle [req]
   (let [hairstyle-details (:json-params req)

@@ -19,14 +19,10 @@
   (db/upsert! details datomic))
 
 (s/defn delete!
-  [id {:keys [datomic]}]
-  (if-let [_ (db/find-by-id id datomic)]
-    (do
-      (db/retract! id datomic)
-      {:status 204})
-    {:status 404
-     :body {:error "Not found"
-            :message (str "Hairstyle " id " does not exist")}}))
+  [id :- s/Str
+   {:keys [datomic]}]
+    (when (db/find-by-id id datomic)
+      (db/retract! id datomic)))
 
 (s/defn update!
   [id details {:keys [datomic]}]

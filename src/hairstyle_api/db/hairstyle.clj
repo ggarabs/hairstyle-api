@@ -79,8 +79,9 @@
      (db/transact datomic [with-id] {}))))
 
 (s/defn retract!
-  [id datomic]
-  (db/transact datomic [[:db.fn/retractEntity id]] {}))
+  [id :- s/Str
+   datomic]
+  (db/transact datomic [[:db.fn/retractEntity (Long/parseLong id)]] {}))
 
 (s/defn update!
   [id hairstyle datomic]

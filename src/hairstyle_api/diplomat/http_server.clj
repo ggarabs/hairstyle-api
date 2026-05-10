@@ -65,10 +65,14 @@
        :body {:error "Schema mismatch"
               :message (.getMessage err)}})))
 
-(defn ^:private delete-hairstyle [req]
-  (let [string-id (get-in req [:path-params :id])
-        converted-id (wire.in/id-string->long string-id)]
-    (controllers.hairstyle/delete! converted-id req)))
+(defn ^:private delete-hairstyle
+  [{{:keys [id]} :path-params :as req}]
+
+  (if (controllers.hairstyle/delete! id req)
+    {:status 204}
+    {:status 404
+     :body {:error "Not found"
+            :message (str "Hairstyle " id " does not exist")}}))
 
 (defn ^:private put-hairstyle [req]
   (let [string-id (get-in req [:path-params :id]) 

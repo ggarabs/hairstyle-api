@@ -25,15 +25,12 @@
       (db/retract! id datomic)))
 
 (s/defn update!
-  [id details {:keys [datomic]}]
-  (if-let [_ (db/find-by-id id datomic)]
-    (do
-      (db/update! id details datomic)
-      {:status 200
-       :body (domain->external (db/find-by-id id datomic))})
-    {:status 404
-     :body {:error "Not found"
-            :message (str "Hairstyle " id " does not exist")}}))
+  [details :- models.hairstyle/Create
+   id :- s/Str
+   {:keys [datomic]}]
+  (when (db/find-by-id id datomic)
+    (db/update! id details datomic)
+    (db/find-by-id id datomic)))
 
 (s/defn patch!
   [id details {:keys [datomic]}]

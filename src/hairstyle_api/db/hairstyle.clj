@@ -84,17 +84,21 @@
   (db/transact datomic [[:db.fn/retractEntity (Long/parseLong id)]] {}))
 
 (s/defn update!
-  [id hairstyle datomic]
-    (let [current (find-by-id id datomic)
+  [id :- s/Str 
+   hairstyle :- models.hairstyle/Create
+   datomic]
+    (let [eid (Long/parseLong id)
+          namespaced-hairstyle (adapters.hairstyle/internal->db hairstyle)
+          current (d/pull (db datomic) '[*] eid)
           current-fields (dissoc current :db/id)
           as-set (fn [v] (if (coll? v) (set v) #{v}))
           retractions (vec (for [[k v] current-fields
-                                 :let [new-val (get hairstyle k)
+                                 :let [new-val (get namespaced-hairstyle k)
                                        to-retract (set/difference (as-set v)
                                                                   (as-set new-val))]
                                  val to-retract]
-                             [:db/retract id k val]))
-          with-id (assoc hairstyle :db/id id)
+                             [:db/retract eid k val]))
+          with-id (assoc namespaced-hairstyle :db/id eid)
           tx-data (conj retractions with-id)]
       (db/transact datomic tx-data {})))
 

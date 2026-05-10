@@ -74,12 +74,17 @@
      :body {:error "Not found"
             :message (str "Hairstyle " id " does not exist")}}))
 
-(defn ^:private put-hairstyle [req]
-  (let [string-id (get-in req [:path-params :id]) 
-        converted-id (wire.in/id-string->long string-id)
-        hairstyle-details (:json-params req)
-        details-namespaced (wire.in/external->domain hairstyle-details)]
-    (controllers.hairstyle/update! converted-id details-namespaced req)))
+(defn ^:private put-hairstyle
+  [{{:keys [id]} :path-params :as req}]
+  (if-let [result (-> (:json-params req)
+                      adapters.hairstyle/wire->internal
+                      (controllers.hairstyle/update! id req)
+                      adapters.hairstyle/internal->wire)]
+    {:status 200
+     :body result}
+    {:status 404
+     :body {:error "Not found"
+            :message (str "Hairstyle " id " does not exist")}}))
 
 (defn ^:private patch-hairstyle [req]
   (let [string-id (get-in req [:path-params :id]) 

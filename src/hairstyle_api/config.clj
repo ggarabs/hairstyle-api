@@ -1,1 +1,0 @@
-(ns hairstyle-api.config)

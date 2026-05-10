@@ -1,56 +1,78 @@
 # 💇 Hairstyle API
 
-## Overview
 Hairstyle API is a RESTful service built with **Clojure** designed to manage hairstyle resources. It provides endpoints for creating, retrieving, updating, and deleting hairstyle records, following diplomat architecture principles and modular design.
 
 ---
 
-## 🧱 Architecture
+# 📌 Overview
 
-The project is structured to promote separation of concerns and maintainability:
+The project exposes HTTP endpoints for creating, retrieving, updating, and deleting hairstyles.
 
-- **Controllers**: Handle HTTP requests and responses
-- **Domain / Protocols**: Define business rules and abstractions
-- **Database Layer**: Responsible for persistence and data access
-- **Components**: Lifecycle management of the application
-- **Wire Layer**: Input/output transformations
+The application was built using:
+
+- **Clojure 1.12**
+- **Pedestal** as the HTTP server
+- **Datomic** as the database
+- **Prismatic Schema** for contract validation
+- **Leiningen** for dependency management
+
+The structure follows a clear separation between:
+
+- Controllers
+- Adapters
+- Models
+- Database Layer
+- HTTP Diplomats
+- Interceptors
+- Wire formats
 
 ---
 
-## ⚙️ Tech Stack
+# 🧱 Project Architecture
 
-- **Language**: Clojure
-- **Build Tool**: Leiningen
-- **Web Server**: Ring
-- **Database**: Configurable (Datomic)
-
----
-
-## 📁 Project Structure
-
-```
+```text
 src/
- └── hairstyle_api/
-     ├── server.clj
-     ├── config.clj
-     ├── components.clj
-     ├── controllers/
-     ├── db/
-     ├── diplomat/
-     ├── protocols/
-     └── wire/
+└── hairstyle_api/
+    ├── adapters/
+    ├── controllers/
+    ├── db/
+    │   ├── config.clj
+    │   ├── hairstyle.clj
+    │   └── schema/
+    ├── diplomat/
+    │   └── http_server.clj
+    ├── interceptors/
+    ├── logic/
+    ├── models/
+    ├── protocols/
+    ├── wire/
+    │   ├── in/
+    │   └── out/
+    ├── components.clj
+    └── server.clj
 ```
 
 ---
 
-## 🚀 Getting Started
+# 🚀 Getting Started
 
-### Prerequisites
+## Prerequisites
 
-- Java 8+ (JVM)
+Before starting, install:
+
+- Java 17+ (JVM)
 - Leiningen
 
-### Installation
+Verify installations:
+
+```bash
+java -version
+lein version
+```
+
+---
+
+## Installation
 
 ```bash
 git clone <repository-url>
@@ -58,57 +80,232 @@ cd hairstyle-api
 lein deps
 ```
 
-### Running the Application
+---
+
+## Running the Project
 
 ```bash
 lein run
 ```
 
-The API will be available at:
+Server available at:
 
-```
-http://localhost:3000
+```text
+http://localhost:8080
 ```
 
 ---
 
-## 🔌 API Endpoints
+# 🔌 Available Endpoints
 
-### Create Hairstyle
-**POST /hairstyles**
+## Check API Version
+
+### GET `/api/version`
+
+### Response
 
 ```json
 {
-  "name": "Undercut",
-  "description": "Modern style with shaved sides"
+  "version": "1.0.0"
 }
 ```
 
 ---
 
-### Get All Hairstyles
-**GET /hairstyles**
+## List Hairstyles
+
+### GET `/api/hairstyles`
+
+### Response
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Buzz Cut",
+    "description": "Minimal short hairstyle",
+    "texture": ["straight"],
+    "length": "short",
+    "main-image": "https://example.com/image.jpg"
+  }
+]
+```
 
 ---
 
-### Get Hairstyle by ID
-**GET /hairstyles/{id}**
+## Get Hairstyle by ID
+
+### GET `/api/hairstyles/:id`
+
+### Example
+
+```bash
+curl http://localhost:8080/api/hairstyles/1
+```
 
 ---
 
-### Update Hairstyle
-**PUT /hairstyles/{id}**
+## Create Hairstyle
+
+### POST `/api/hairstyles`
+
+### Body
+
+```json
+{
+  "name": "Undercut",
+  "slug": "undercut",
+  "description": "Modern hairstyle with shaved sides",
+  "texture": ["straight", "wavy"],
+  "length": "medium",
+  "main-image": "https://example.com/undercut.jpg",
+  "gallery": ["https://example.com/1.jpg", "https://example.com/2.jpg"],
+  "tags": ["modern", "popular"]
+}
+```
+
+### Response
+
+```http
+201 Created
+```
 
 ---
 
-### Delete Hairstyle
-**DELETE /hairstyles/{id}**
+## Update Hairstyle
+
+### PUT `/api/hairstyles/:id`
+
+Completely replaces the resource.
 
 ---
 
-## 🧪 Testing
+## Partial Update
 
-Run automated tests with:
+### PATCH `/api/hairstyles/:id`
+
+Updates only the provided fields.
+
+### Example
+
+```json
+{
+  "description": "Updated description"
+}
+```
+
+---
+
+## Delete Hairstyle
+
+### DELETE `/api/hairstyles/:id`
+
+### Response
+
+```http
+204 No Content
+```
+
+---
+
+# 📦 Data Model
+
+The main Hairstyle schema contains:
+
+```clojure
+{
+ :id number
+ :name string
+ :slug string
+ :description string
+ :texture [string]
+ :length string
+ :main-image string
+ :gallery [string]
+ :tags [string]
+}
+```
+
+---
+
+# 🧠 Internal Structure
+
+## Controllers
+
+Responsible for orchestration rules.
+
+File:
+
+```text
+src/hairstyle_api/controllers/hairstyle.clj
+```
+
+---
+
+## Adapters
+
+Transform internal structures ↔ wire format ↔ Datomic.
+
+File:
+
+```text
+src/hairstyle_api/adapters/hairstyle.clj
+```
+
+---
+
+## Diplomats
+
+HTTP layer responsible for routes and responses.
+
+File:
+
+```text
+src/hairstyle_api/diplomat/http_server.clj
+```
+
+---
+
+## Database Layer
+
+Responsible for:
+
+- Queries
+- Persistence
+- Updates
+- Retract
+- Transactions
+
+File:
+
+```text
+src/hairstyle_api/db/hairstyle.clj
+```
+
+---
+
+# 🛡️ Validation
+
+The API uses **Prismatic Schema** for validating:
+
+- Inputs
+- Internal contracts
+- Data structures
+- Controller operations
+
+Example:
+
+```clojure
+(s/defschema Create
+  {:name s/Str
+   :description s/Str})
+```
+
+---
+
+# 🧪 Tests
+
+To run the tests:
 
 ```bash
 lein test
@@ -116,41 +313,13 @@ lein test
 
 ---
 
-## 🔧 Configuration
+# 📄 License
 
-Application configuration is managed in:
+Project licensed under:
 
-```
-src/hairstyle_api/config.clj
-```
+- EPL-2.0
+- GPL-2.0-or-later
 
-You can customize:
-
-- Server port
-- Database connection
-- Environment settings (dev, test, prod)
+See the `LICENSE` file.
 
 ---
-
-## 📈 Best Practices
-
-- Functional programming principles
-- Immutable data structures
-- Protocol-based abstractions
-- Modular architecture
-- Automated testing
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`feature/your-feature`)
-3. Commit your changes
-4. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.

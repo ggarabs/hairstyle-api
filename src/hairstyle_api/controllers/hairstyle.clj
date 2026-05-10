@@ -1,7 +1,8 @@
 (ns hairstyle-api.controllers.hairstyle
   (:require [schema.core :as s]
             [hairstyle-api.db.hairstyle :as db]
-            [hairstyle-api.wire.out.hairstyle :refer [domain->external]]))
+            [hairstyle-api.wire.out.hairstyle :refer [domain->external]]
+            [hairstyle-api.models.hairstyle :as models.hairstyle]))
 
 (s/defn get-all
   [{:keys [datomic]}]
@@ -13,9 +14,9 @@
   (db/find-by-id id datomic))
 
 (s/defn insert!
-  [details {:keys [datomic]}]
-  (db/upsert! details datomic)
-  {:status 201})
+  [details :- models.hairstyle/Create
+   {:keys [datomic]}]
+  (db/upsert! details datomic))
 
 (s/defn delete!
   [id {:keys [datomic]}]

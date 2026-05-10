@@ -68,9 +68,13 @@
            adapters.hairstyle/db->internal))
 
 (s/defn upsert!
-  ([hairstyle datomic]
-   (db/transact datomic [hairstyle] {}))
-  ([id hairstyle datomic]
+  ([hairstyle :- models.hairstyle/Create
+    datomic]
+   (let [namespaced-hairstyle (adapters.hairstyle/internal->db hairstyle)]
+     (db/transact datomic [namespaced-hairstyle] {})))
+  ([id :- s/Str
+    hairstyle :- models.hairstyle/Create
+    datomic]
    (let [with-id (assoc hairstyle :db/id id)]
      (db/transact datomic [with-id] {}))))
 

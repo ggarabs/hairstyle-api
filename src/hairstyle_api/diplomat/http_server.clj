@@ -2,7 +2,7 @@
   (:require
    [clojure.set :as set]
    [io.pedestal.http :as http]
-   [io.pedestal.http.body-params :refer [body-params]]
+   [io.pedestal.http.body-params :refer [body-params default-parser-map]]
    [io.pedestal.http.route :refer [expand-routes]]
    [hairstyle-api.controllers.hairstyle :as controllers.hairstyle]
    [hairstyle-api.db.config :refer [conn]]
@@ -20,16 +20,17 @@
 
 (def body-interceptors
   [http/log-request
-   (body-params)
+   (body-params
+    (default-parser-map
+     :json-options {:key-fn identity}))
    http/json-body
-   (interceptors.http/validate-body wire.in/hairstyle)
    (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
 (def patch-interceptors
   [http/log-request
    (body-params)
    http/json-body
-   (interceptors.http/validate-body wire.in/optional-hairstyle)
+   (interceptors.http/validate-body wire.in/OptionalHairstyle)
    (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
 (defn ^:private current-version [_]
@@ -52,10 +53,17 @@
      :body {:error "Not found"
             :message (str "Hairstyle " id " does not exist")}}))
 
-(defn ^:private insert-hairstyle [req]
-  (let [hairstyle-details (:json-params req)
-        details-namespaced (wire.in/external->domain hairstyle-details)]
-    (controllers.hairstyle/insert! details-namespaced req)))
+(defn ^:private insert-hairstyle
+  [req]
+  (try
+    (-> (:json-params req)
+        adapters.hairstyle/wire->internal
+        (controllers.hairstyle/insert! req))
+    {:status 201}
+    (catch Exception err
+      {:status 500
+       :body {:error "Schema mismatch"
+              :message (.getMessage err)}})))
 
 (defn ^:private delete-hairstyle [req]
   (let [string-id (get-in req [:path-params :id])

@@ -12,20 +12,6 @@
 
 (def common-interceptors
   [http/log-request
-   (body-params)
-   http/json-body
-   (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
-
-(def body-interceptors
-  [http/log-request
-   (body-params
-    (default-parser-map
-     :json-options {:key-fn identity}))
-   http/json-body
-   (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
-
-(def patch-interceptors
-  [http/log-request
    (body-params
     (default-parser-map
      :json-options {:key-fn identity}))
@@ -109,7 +95,7 @@
                 get-hairstyles)
      :route-name :get-haistyles]
     ["/api/hairstyle"
-     :post (conj body-interceptors
+     :post (conj common-interceptors
                  insert-hairstyle)
      :route-name :post-haistyle]
     ["/api/hairstyle/:id"
@@ -121,11 +107,11 @@
                    delete-hairstyle)
      :route-name :delete-hairstyle]
     ["/api/hairstyle/:id"
-     :put (conj body-interceptors
+     :put (conj common-interceptors
                 put-hairstyle)
      :route-name :put-hairstyle]
     ["/api/hairstyle/:id"
-     :patch (conj patch-interceptors
+     :patch (conj common-interceptors
                   patch-hairstyle)
      :route-name :patch-hairstyle]})
 

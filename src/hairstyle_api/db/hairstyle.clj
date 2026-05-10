@@ -72,11 +72,14 @@
     datomic]
    (let [namespaced-hairstyle (adapters.hairstyle/internal->db hairstyle)]
      (db/transact datomic [namespaced-hairstyle] {})))
+
   ([id :- s/Str
-    hairstyle :- models.hairstyle/Create
+    hairstyle :- models.hairstyle/OptionalHairstyle
     datomic]
-   (let [with-id (assoc hairstyle :db/id id)]
-     (db/transact datomic [with-id] {}))))
+   (let [changes (-> hairstyle
+                     adapters.hairstyle/internal-changes->db
+                     (assoc :db/id (Long/parseLong id)))]
+     (db/transact datomic [changes] {}))))
 
 (s/defn retract!
   [id :- s/Str

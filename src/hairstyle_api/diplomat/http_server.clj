@@ -7,8 +7,6 @@
    [hairstyle-api.controllers.hairstyle :as controllers.hairstyle]
    [hairstyle-api.db.config :refer [conn]]
    [hairstyle-api.db.hairstyle :as db.hairstyle]
-   [hairstyle-api.wire.in.hairstyle :as wire.in]
-   [hairstyle-api.interceptors.http :as interceptors.http]
    [hairstyle-api.interceptors.db :as interceptors.db]
    [hairstyle-api.adapters.hairstyle :as adapters.hairstyle]))
 
@@ -28,9 +26,10 @@
 
 (def patch-interceptors
   [http/log-request
-   (body-params)
+   (body-params
+    (default-parser-map
+     :json-options {:key-fn identity}))
    http/json-body
-   (interceptors.http/validate-body wire.in/OptionalHairstyle)
    (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
 (defn ^:private current-version [_]
@@ -86,12 +85,17 @@
      :body {:error "Not found"
             :message (str "Hairstyle " id " does not exist")}}))
 
-(defn ^:private patch-hairstyle [req]
-  (let [string-id (get-in req [:path-params :id]) 
-        converted-id (wire.in/id-string->long string-id)
-        hairstyle-details (:json-params req)
-        details-namespaced (wire.in/external->domain hairstyle-details)]
-    (controllers.hairstyle/patch! converted-id details-namespaced req)))
+(defn ^:private patch-hairstyle 
+  [{{:keys [id]} :path-params :as req}]
+    (if-let [result (some-> (:json-params req)
+                            adapters.hairstyle/wire-optional->internal
+                            (controllers.hairstyle/patch! id req)
+                            adapters.hairstyle/internal->wire)]
+      {:status 200
+       :body result}
+      {:status 404
+       :body {:error "Not found"
+              :message (str "Hairstyle " id " does not exist")}}))
 
 (def default-routes
   #{["/api/version"

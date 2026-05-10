@@ -33,6 +33,10 @@
   [hairstyle :- models.hairstyle/Create]
   (update-keys hairstyle #(keyword (str "hairstyle/" (name %)))))
 
+(s/defn internal-changes->db :- wire.db.hairstyle/PersistedChanges
+  [hairstyle :- models.hairstyle/OptionalHairstyle]
+  (update-keys hairstyle #(keyword (str "hairstyle/" (name %)))))
+
 (s/defn internal->wire :- wire.out.hairstyle/Hairstyle
   [hairstyle :- models.hairstyle/Hairstyle]
   (update-keys hairstyle #(kebab->camel (name %))))
@@ -44,3 +48,7 @@
 (s/defn wire->internal :- models.hairstyle/Create
   [external-hairstyle :- wire.in.hairstyle/Hairstyle]
   (update-keys external-hairstyle #(keyword (camel->kebab %))))
+
+(s/defn wire-optional->internal :- models.hairstyle/OptionalHairstyle
+  [external-opt-hairstyle :- wire.in.hairstyle/OptionalHairstyle]
+  (update-keys external-opt-hairstyle #(keyword (camel->kebab %))))

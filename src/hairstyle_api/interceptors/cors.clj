@@ -15,7 +15,6 @@
    (fn [context]
      (let [request (:request context)]
        (if (= :options (:request-method request))
-         ;; resposta para preflight
          (assoc context
                 :response
                 {:status 200

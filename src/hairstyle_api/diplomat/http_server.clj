@@ -8,13 +8,15 @@
    [hairstyle-api.db.config :refer [conn]]
    [hairstyle-api.db.hairstyle :as db.hairstyle]
    [hairstyle-api.interceptors.db :as interceptors.db]
-   [hairstyle-api.adapters.hairstyle :as adapters.hairstyle]))
+   [hairstyle-api.adapters.hairstyle :as adapters.hairstyle]
+   [hairstyle-api.interceptors.cors :refer [cors-interceptor]]))
 
 (def common-interceptors
   [http/log-request
    (body-params
     (default-parser-map
      :json-options {:key-fn identity}))
+   cors-interceptor
    http/json-body
    (interceptors.db/inject-db (db.hairstyle/->DatomicDB conn))])
 
